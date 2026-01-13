@@ -912,28 +912,28 @@ class App(tk.Tk):
         # Seed entry (RTL: label on right, entry on left)
         seed_frame = tk.Frame(fields_frame, bg=self.colors['card_bg'])
         seed_frame.pack(side="right", padx=5)
-        tk.Label(seed_frame, text="Seed:", bg=self.colors['card_bg'], fg=self.colors['text'], 
-                font=("Arial", 9)).pack(side="right", padx=(5, 0))
+        tk.Label(seed_frame, text=":זרע אקראי", bg=self.colors['card_bg'], fg=self.colors['text'],
+                font=("Arial", 10, "bold"), justify="right", anchor="e").pack(side="right", padx=(5, 2))
         self.seed_var = tk.StringVar(value="")
-        seed_entry = tk.Entry(seed_frame, textvariable=self.seed_var, width=10, font=("Arial", 9))
+        seed_entry = tk.Entry(seed_frame, textvariable=self.seed_var, width=10, font=("Arial", 10))
         seed_entry.pack(side="left")
-        
+
         # Max steps entry
         steps_frame = tk.Frame(fields_frame, bg=self.colors['card_bg'])
         steps_frame.pack(side="right", padx=5)
-        tk.Label(steps_frame, text="Max steps:", bg=self.colors['card_bg'], fg=self.colors['text'],
-                font=("Arial", 9)).pack(side="right", padx=(5, 0))
+        tk.Label(steps_frame, text=":צעדים מקס'", bg=self.colors['card_bg'], fg=self.colors['text'],
+                font=("Arial", 10, "bold"), justify="right", anchor="e").pack(side="right", padx=(5, 2))
         self.steps_var = tk.StringVar(value="200000")
-        steps_entry = tk.Entry(steps_frame, textvariable=self.steps_var, width=10, font=("Arial", 9))
+        steps_entry = tk.Entry(steps_frame, textvariable=self.steps_var, width=10, font=("Arial", 10))
         steps_entry.pack(side="left")
-        
+
         # Delay entry
         delay_frame = tk.Frame(fields_frame, bg=self.colors['card_bg'])
         delay_frame.pack(side="right", padx=5)
-        tk.Label(delay_frame, text="עיכוב (ms):", bg=self.colors['card_bg'], fg=self.colors['text'],
-                font=("Arial", 9), justify="right", anchor="e").pack(side="right", padx=(5, 0))
+        tk.Label(delay_frame, text=":עיכוב (ms)", bg=self.colors['card_bg'], fg=self.colors['text'],
+                font=("Arial", 10, "bold"), justify="right", anchor="e").pack(side="right", padx=(5, 2))
         self.delay_var = tk.StringVar(value="150")
-        delay_entry = tk.Entry(delay_frame, textvariable=self.delay_var, width=8, font=("Arial", 9))
+        delay_entry = tk.Entry(delay_frame, textvariable=self.delay_var, width=8, font=("Arial", 10))
         delay_entry.pack(side="left")
         
         # History checkbox
@@ -1038,9 +1038,9 @@ class App(tk.Tk):
         # Header for code editor (RTL: text on right)
         header = tk.Frame(left_frame, bg=self.colors['bg'])
         header.pack(fill="x", pady=(0, 5))
-        tk.Label(header, text="קוד 📝", font=("Arial", 12, "bold"), 
+        tk.Label(header, text="עורך קוד Assembly 📝", font=("Arial", 13, "bold"),
                 bg=self.colors['bg'], fg=self.colors['text'],
-                anchor="e", justify="right").pack(side="right")
+                anchor="e", justify="right").pack(side="right", padx=5)
         
         # Code editor frame
         code_frame = tk.Frame(left_frame, bg=self.colors['card_bg'], 
@@ -1110,106 +1110,131 @@ class App(tk.Tk):
 
         # Task card
         task_card = self._create_card(cards_container, "📋 משימה")
-        self.task_label = tk.Label(task_card, text="(אין משימה בקוד הנוכחי)", 
-                                   wraplength=300, justify="right",
+        self.task_label = tk.Label(task_card, text="(אין משימה בקוד הנוכחי)",
+                                   wraplength=350, justify="right",
                                    bg=self.colors['card_bg'], fg=self.colors['text'],
-                                   font=("Arial", 10))
-        self.task_label.pack(anchor="e", padx=5, pady=5)
+                                   font=("Arial", 11), anchor="e")
+        self.task_label.pack(anchor="e", fill="x", padx=10, pady=8)
 
         # Python equivalent card
         python_card = self._create_card(cards_container, "🐍 קוד Python מקביל", "#E8F5E9")
-        self.python_text = scrolledtext.ScrolledText(python_card, height=4,
-                                                     font=("Courier New", 9),
+        self.python_text = scrolledtext.ScrolledText(python_card, height=5,
+                                                     font=("Courier New", 10),
                                                      state="disabled", bg="white",
-                                                     fg="#2E7D32", wrap="word")
-        self.python_text.pack(fill="both", expand=True, padx=5, pady=5)
+                                                     fg="#2E7D32", wrap="word",
+                                                     relief=tk.SOLID, bd=1)
+        self.python_text.pack(fill="both", expand=True, padx=8, pady=8)
         self.python_text.config(state="normal")
-        self.python_text.insert("1.0", "# הקוד Python יופיע כאן כשתריץ צעד")
+        self.python_text.insert("1.0", "# הקוד Python יופיע כאן")
         self.python_text.config(state="disabled")
 
         # Registers card (RTL: value on left, label on right)
         regs_card = self._create_card(cards_container, "🔢 רגיסטרים", self.colors['register'])
         regs_grid = tk.Frame(regs_card, bg=self.colors['register'])
-        regs_grid.pack(fill="x", padx=5, pady=5)
+        regs_grid.pack(fill="x", padx=8, pady=8)
+
+        # Configure grid columns for better spacing
+        for i in range(4):
+            regs_grid.grid_columnconfigure(i, weight=1)
 
         self.reg_labels = {}
         for i, reg in enumerate(["R1", "R2", "R3", "L1"]):
             row, col = i // 2, i % 2
             # Value on LEFT (RTL)
-            lbl = tk.Label(regs_grid, text="0", 
-                          font=("Courier New", 13, "bold"),
-                          width=8, anchor="e",  # Right-aligned text
+            lbl = tk.Label(regs_grid, text="0",
+                          font=("Courier New", 16, "bold"),
+                          width=8, anchor="e",
                           bg=self.colors['register'],
-                          fg=self.colors['primary'])
-            lbl.grid(row=row, column=col*2, sticky="e", padx=5, pady=4)
+                          fg=self.colors['primary'],
+                          relief=tk.FLAT, padx=5, pady=3)
+            lbl.grid(row=row, column=col*2, sticky="e", padx=5, pady=6)
             # Label on RIGHT (RTL)
-            tk.Label(regs_grid, text=f":{reg}",  # Colon on right
-                    font=("Arial", 10, "bold"),
-                    bg=self.colors['register'], 
+            tk.Label(regs_grid, text=f":{reg}",
+                    font=("Arial", 12, "bold"),
+                    bg=self.colors['register'],
                     fg=self.colors['text']).grid(
-                        row=row, column=col*2+1, sticky="w", padx=5, pady=4)
+                        row=row, column=col*2+1, sticky="w", padx=5, pady=6)
             self.reg_labels[reg] = lbl
 
         # Flags card
         flags_card = self._create_card(cards_container, "🚩 דגלים", "#FFF9C4")
         flags_grid = tk.Frame(flags_card, bg="#FFF9C4")
-        flags_grid.pack(fill="x", padx=5, pady=5)
+        flags_grid.pack(fill="x", padx=8, pady=8)
+
+        # Configure grid columns for better spacing
+        for i in range(4):
+            flags_grid.grid_columnconfigure(i, weight=1)
 
         self.flag_labels = {}
+        flag_names_hebrew = {"ZERO": "אפס", "NEGATIVE": "שלילי"}
         for i, flag in enumerate(["ZERO", "NEGATIVE"]):
-            tk.Label(flags_grid, text=f"{flag}:", font=("Arial", 10, "bold"),
+            # Value on LEFT (RTL)
+            lbl = tk.Label(flags_grid, text="לא", font=("Arial", 13, "bold"),
+                          width=6, bg="#FFF9C4", fg=self.colors['flag_off'],
+                          anchor="e", relief=tk.FLAT, padx=5, pady=3)
+            lbl.grid(row=0, column=i*2, sticky="e", padx=5, pady=6)
+            # Label on RIGHT (RTL) - with Hebrew names
+            tk.Label(flags_grid, text=f":{flag_names_hebrew[flag]}", font=("Arial", 11, "bold"),
                     bg="#FFF9C4", fg=self.colors['text']).grid(
-                        row=0, column=i*2, sticky="e", padx=5, pady=4)
-            lbl = tk.Label(flags_grid, text="לא", font=("Arial", 11, "bold"),
-                          width=5, bg="#FFF9C4", fg=self.colors['flag_off'])
-            lbl.grid(row=0, column=i*2+1, sticky="w", padx=5, pady=4)
+                        row=0, column=i*2+1, sticky="w", padx=5, pady=6)
             self.flag_labels[flag] = lbl
 
         # Stacks card (RTL: S1 on right, S2 on left)
         stacks_card = self._create_card(cards_container, "📚 מחסניות", self.colors['stack'])
-        
+
         stacks_frame = tk.Frame(stacks_card, bg=self.colors['stack'])
-        stacks_frame.pack(fill="x", padx=5, pady=5)
+        stacks_frame.pack(fill="x", padx=8, pady=8)
 
         # S1 on RIGHT (RTL)
         s1_frame = tk.Frame(stacks_frame, bg=self.colors['stack'])
         s1_frame.pack(side="right", padx=5, expand=True, fill="both")
-        tk.Label(s1_frame, text="S1", font=("Arial", 10, "bold"),
-                bg=self.colors['stack'], fg=self.colors['text']).pack()
-        self.stack1_listbox = tk.Listbox(s1_frame, height=4, width=12,
-                                         font=("Courier New", 9),
-                                         bg="white", fg=self.colors['text'])
+        tk.Label(s1_frame, text="מחסנית 1 (S1)", font=("Arial", 11, "bold"),
+                bg=self.colors['stack'], fg=self.colors['text'],
+                anchor="e", justify="right").pack(fill="x", pady=(0, 3))
+        self.stack1_listbox = tk.Listbox(s1_frame, height=5, width=14,
+                                         font=("Courier New", 11),
+                                         bg="white", fg=self.colors['text'],
+                                         relief=tk.SOLID, bd=1)
         self.stack1_listbox.pack(fill="both", expand=True)
 
         # S2 on LEFT (RTL)
         s2_frame = tk.Frame(stacks_frame, bg=self.colors['stack'])
         s2_frame.pack(side="left", padx=5, expand=True, fill="both")
-        tk.Label(s2_frame, text="S2", font=("Arial", 10, "bold"),
-                bg=self.colors['stack'], fg=self.colors['text']).pack()
-        self.stack2_listbox = tk.Listbox(s2_frame, height=4, width=12,
-                                         font=("Courier New", 9),
-                                         bg="white", fg=self.colors['text'])
+        tk.Label(s2_frame, text="מחסנית 2 (S2)", font=("Arial", 11, "bold"),
+                bg=self.colors['stack'], fg=self.colors['text'],
+                anchor="e", justify="right").pack(fill="x", pady=(0, 3))
+        self.stack2_listbox = tk.Listbox(s2_frame, height=5, width=14,
+                                         font=("Courier New", 11),
+                                         bg="white", fg=self.colors['text'],
+                                         relief=tk.SOLID, bd=1)
         self.stack2_listbox.pack(fill="both", expand=True)
 
         counters_frame = tk.Frame(stacks_card, bg=self.colors['stack'])
-        counters_frame.pack(fill="x", padx=5, pady=5)
-        
-        tk.Label(counters_frame, text="C1:", font=("Arial", 9, "bold"),
-                bg=self.colors['stack'], fg=self.colors['text']).pack(side="left", padx=5)
-        self.c1_label = tk.Label(counters_frame, text="0", font=("Courier New", 11, "bold"),
-                                bg=self.colors['stack'], fg=self.colors['primary'])
-        self.c1_label.pack(side="left", padx=5)
-        
-        tk.Label(counters_frame, text="C2:", font=("Arial", 9, "bold"),
-                bg=self.colors['stack'], fg=self.colors['text']).pack(side="left", padx=15)
-        self.c2_label = tk.Label(counters_frame, text="0", font=("Courier New", 11, "bold"),
-                                bg=self.colors['stack'], fg=self.colors['primary'])
-        self.c2_label.pack(side="left", padx=5)
+        counters_frame.pack(fill="x", padx=8, pady=(5, 8))
+
+        # RTL: C1 on right, C2 on left
+        c1_container = tk.Frame(counters_frame, bg=self.colors['stack'])
+        c1_container.pack(side="right", padx=10)
+        self.c1_label = tk.Label(c1_container, text="0", font=("Courier New", 13, "bold"),
+                                bg=self.colors['stack'], fg=self.colors['primary'],
+                                width=3, anchor="e")
+        self.c1_label.pack(side="left", padx=(0, 5))
+        tk.Label(c1_container, text=":ספירה 1", font=("Arial", 10, "bold"),
+                bg=self.colors['stack'], fg=self.colors['text']).pack(side="left")
+
+        c2_container = tk.Frame(counters_frame, bg=self.colors['stack'])
+        c2_container.pack(side="left", padx=10)
+        self.c2_label = tk.Label(c2_container, text="0", font=("Courier New", 13, "bold"),
+                                bg=self.colors['stack'], fg=self.colors['primary'],
+                                width=3, anchor="e")
+        self.c2_label.pack(side="left", padx=(0, 5))
+        tk.Label(c2_container, text=":ספירה 2", font=("Arial", 10, "bold"),
+                bg=self.colors['stack'], fg=self.colors['text']).pack(side="left")
 
         # Memory (LIST) card
         mem_card = self._create_card(cards_container, "💾 זיכרון (LIST)", self.colors['memory'])
         mem_frame = tk.Frame(mem_card, bg=self.colors['memory'])
-        mem_frame.pack(fill="both", expand=True, padx=5, pady=5)
+        mem_frame.pack(fill="both", expand=True, padx=8, pady=8)
 
         mem_scroll = ttk.Scrollbar(mem_frame)
         mem_scroll.pack(side="right", fill="y")
@@ -1217,16 +1242,17 @@ class App(tk.Tk):
         self.mem_tree = ttk.Treeview(mem_frame, columns=("value",), show="tree headings",
                                      height=8, yscrollcommand=mem_scroll.set)
         mem_scroll.config(command=self.mem_tree.yview)
-        self.mem_tree.heading("#0", text="Index")
-        self.mem_tree.heading("value", text="Value")
-        self.mem_tree.column("#0", width=80)
-        self.mem_tree.column("value", width=100)
+        self.mem_tree.heading("#0", text="אינדקס", anchor="e")
+        self.mem_tree.heading("value", text="ערך", anchor="e")
+        self.mem_tree.column("#0", width=80, anchor="e")
+        self.mem_tree.column("value", width=100, anchor="center")
         self.mem_tree.pack(side="left", fill="both", expand=True)
 
         # Style for treeview
         style = ttk.Style()
-        style.configure("Treeview", background=self.colors['memory'], 
-                       fieldbackground=self.colors['memory'])
+        style.configure("Treeview", background=self.colors['memory'],
+                       fieldbackground=self.colors['memory'], font=("Courier New", 10))
+        style.configure("Treeview.Heading", font=("Arial", 10, "bold"))
 
         for i in range(33):
             self.mem_tree.insert("", "end", text=str(i), values=(str(i),))
@@ -1236,8 +1262,10 @@ class App(tk.Tk):
         self.out_preview = scrolledtext.ScrolledText(out_preview_card, height=6,
                                                      font=("Courier New", 10),
                                                      state="disabled", bg="white",
-                                                     fg=self.colors['success'])
+                                                     fg=self.colors['success'], wrap="word")
         self.out_preview.pack(fill="both", expand=True, padx=5, pady=5)
+        # Configure RTL for Hebrew output
+        self.out_preview.tag_configure("rtl", justify="right")
 
         # Bottom: Notebook (existing tabs)
         self.notebook = ttk.Notebook(right)
@@ -1246,44 +1274,58 @@ class App(tk.Tk):
         # Output tab
         out_frame = tk.Frame(self.notebook, bg=self.colors['card_bg'])
         self.notebook.add(out_frame, text="📤 פלט")
-        self.out = scrolledtext.ScrolledText(out_frame, font=("Courier New", 10),
-                                             bg=self.colors['card_bg'], 
-                                             fg=self.colors['success'])
-        self.out.pack(fill="both", expand=True, padx=5, pady=5)
+        self.out = scrolledtext.ScrolledText(out_frame, font=("Courier New", 11),
+                                             bg=self.colors['card_bg'],
+                                             fg=self.colors['success'], wrap="word")
+        self.out.pack(fill="both", expand=True, padx=8, pady=8)
+        # Configure RTL tags
+        self.out.tag_configure("rtl", justify="right")
+        self.out.tag_configure("header", font=("Arial", 13, "bold"), foreground=self.colors['primary'], justify="right")
+        self.out.tag_configure("info", foreground=self.colors['text_secondary'], justify="right")
 
         # Error tab
         err_frame = tk.Frame(self.notebook, bg=self.colors['card_bg'])
         self.notebook.add(err_frame, text="⚠ שגיאות")
-        self.err = scrolledtext.ScrolledText(err_frame, font=("Courier New", 10),
+        self.err = scrolledtext.ScrolledText(err_frame, font=("Courier New", 11),
                                              foreground=self.colors['error'],
-                                             bg=self.colors['card_bg'])
-        self.err.pack(fill="both", expand=True, padx=5, pady=5)
+                                             bg=self.colors['card_bg'], wrap="word")
+        self.err.pack(fill="both", expand=True, padx=8, pady=8)
+        # Configure RTL tags for errors
+        self.err.tag_configure("rtl", justify="right")
+        self.err.tag_configure("header", font=("Arial", 13, "bold"), justify="right")
 
         # State tab
         state_frame = tk.Frame(self.notebook, bg=self.colors['card_bg'])
         self.notebook.add(state_frame, text="🔍 מצב")
-        self.state = scrolledtext.ScrolledText(state_frame, font=("Courier New", 10),
-                                               bg=self.colors['card_bg'], 
-                                               fg=self.colors['text'])
-        self.state.pack(fill="both", expand=True, padx=5, pady=5)
+        self.state = scrolledtext.ScrolledText(state_frame, font=("Courier New", 11),
+                                               bg=self.colors['card_bg'],
+                                               fg=self.colors['text'], wrap="word")
+        self.state.pack(fill="both", expand=True, padx=8, pady=8)
+        # Configure RTL tags for state
+        self.state.tag_configure("rtl", justify="right")
+        self.state.tag_configure("header", font=("Arial", 13, "bold"), foreground=self.colors['primary'], justify="right")
 
         # History tab
         hist_frame = tk.Frame(self.notebook, bg=self.colors['card_bg'])
         self.notebook.add(hist_frame, text="📜 היסטוריה")
-        self.history = scrolledtext.ScrolledText(hist_frame, font=("Courier New", 9),
-                                                 bg=self.colors['card_bg'], 
-                                                 fg=self.colors['text_secondary'])
-        self.history.pack(fill="both", expand=True, padx=5, pady=5)
+        self.history = scrolledtext.ScrolledText(hist_frame, font=("Courier New", 10),
+                                                 bg=self.colors['card_bg'],
+                                                 fg=self.colors['text_secondary'], wrap="word")
+        self.history.pack(fill="both", expand=True, padx=8, pady=8)
+        # Configure RTL tags for history
+        self.history.tag_configure("rtl", justify="right")
+        self.history.tag_configure("header", font=("Arial", 13, "bold"), justify="right")
 
     def _create_card(self, parent, title, bg_color=None):
-        """Create a styled card frame"""
+        """Create a styled card frame with RTL support"""
         if bg_color is None:
             bg_color = self.colors['card_bg']
-        
-        card = tk.LabelFrame(parent, text=title, font=("Arial", 10, "bold"),
+
+        card = tk.LabelFrame(parent, text=f" {title} ", font=("Arial", 11, "bold"),
                             bg=bg_color, fg=self.colors['text'],
-                            relief=tk.RAISED, bd=2)
-        card.pack(fill="both", expand=True, padx=5, pady=5)
+                            relief=tk.GROOVE, bd=2, padx=3, pady=3,
+                            labelanchor="ne")  # RTL: label on top-right
+        card.pack(fill="both", expand=True, padx=6, pady=6)
         return card
 
     def _on_scrollbar(self, *args):
@@ -1468,30 +1510,30 @@ class App(tk.Tk):
 
             # output
             if m.output:
-                self.out.insert("end", "=== פלט ===\n", "header")
+                self.out.insert("end", "=== פלט ===\n", ("header", "rtl"))
                 self.out.insert("end", "\n".join(str(x) for x in m.output) + "\n")
             else:
-                self.out.insert("end", "(אין פלט)\n", "info")
+                self.out.insert("end", "(אין פלט)\n", ("info", "rtl"))
 
             # state
-            self.state.insert("end", "=== מצב סופי ===\n\n", "header")
-            self.state.insert("end", f"R1 = {m.regs['R1']}\n")
-            self.state.insert("end", f"R2 = {m.regs['R2']}\n")
-            self.state.insert("end", f"R3 = {m.regs['R3']}\n")
-            self.state.insert("end", f"L1 = {m.L1}\n\n")
-            self.state.insert("end", f"C1 = {len(m.stacks['S1'])} S1 = {m.stacks['S1']}\n")
-            self.state.insert("end", f"C2 = {len(m.stacks['S2'])} S2 = {m.stacks['S2']}\n\n")
-            self.state.insert("end", f"ZERO = {m.flags['ZERO']} NEGATIVE = {m.flags['NEGATIVE']}\n\n")
-            self.state.insert("end", f"LIST (0..9): {m.LIST[:10]} ...\n")
+            self.state.insert("end", "=== מצב סופי ===\n\n", ("header", "rtl"))
+            self.state.insert("end", f"R1 = {m.regs['R1']}\n", "rtl")
+            self.state.insert("end", f"R2 = {m.regs['R2']}\n", "rtl")
+            self.state.insert("end", f"R3 = {m.regs['R3']}\n", "rtl")
+            self.state.insert("end", f"L1 = {m.L1}\n\n", "rtl")
+            self.state.insert("end", f"C1 = {len(m.stacks['S1'])} S1 = {m.stacks['S1']}\n", "rtl")
+            self.state.insert("end", f"C2 = {len(m.stacks['S2'])} S2 = {m.stacks['S2']}\n\n", "rtl")
+            self.state.insert("end", f"ZERO = {m.flags['ZERO']} NEGATIVE = {m.flags['NEGATIVE']}\n\n", "rtl")
+            self.state.insert("end", f"LIST (0..9): {m.LIST[:10]} ...\n", "rtl")
 
             # history
             if self.history_var.get() and m.execution_history:
-                self.history.insert("end", "=== היסטוריה (50 אחרונים) ===\n\n")
+                self.history.insert("end", "=== היסטוריה (50 אחרונים) ===\n\n", ("header", "rtl"))
                 for i, st in enumerate(m.execution_history[-50:], 1):
-                    self.history.insert("end", f"[{i}] {st['step']}\n")
+                    self.history.insert("end", f"[{i}] {st['step']}\n", "rtl")
                     self.history.insert("end",
                         f"  R1={st['R1']} R2={st['R2']} R3={st['R3']} L1={st['L1']} "
-                        f"C1={st['C1']} C2={st['C2']} ZERO={st['ZERO']} NEG={st['NEGATIVE']}\n")
+                        f"C1={st['C1']} C2={st['C2']} ZERO={st['ZERO']} NEG={st['NEGATIVE']}\n", "rtl")
 
             self.notebook.select(0)
             self.update_right_cards(m)
@@ -1501,17 +1543,17 @@ class App(tk.Tk):
                 self.code.tag_add("errorline", f"{e.line_no}.0", f"{e.line_no}.end")
                 self.code.see(f"{e.line_no}.0")
 
-            msg = "=== שגיאה ===\n\n"
+            self.err.insert("end", "=== שגיאה ===\n\n", ("header", "rtl"))
             if e.line_no:
-                msg += f"שורה {e.line_no}: {e}\n"
+                self.err.insert("end", f"שורה {e.line_no}: {e}\n", "rtl")
                 if e.raw_line is not None:
-                    msg += f"קוד מקור: {e.raw_line}\n"
+                    self.err.insert("end", f"קוד מקור: {e.raw_line}\n", "rtl")
             else:
-                msg += f"{e}\n"
-            self.err.insert("end", msg)
+                self.err.insert("end", f"{e}\n", "rtl")
             self.notebook.select(1)
         except Exception as ex:
-            self.err.insert("end", f"שגיאה בלתי צפויה: {ex}\n")
+            self.err.insert("end", "=== שגיאה בלתי צפויה ===\n\n", ("header", "rtl"))
+            self.err.insert("end", f"{ex}\n", "rtl")
             self.notebook.select(1)
 
     def _copy_machine(self, m: Machine) -> Machine:
@@ -1616,14 +1658,13 @@ class App(tk.Tk):
                 self.code.tag_add("errorline", f"{e.line_no}.0", f"{e.line_no}.end")
                 self.code.see(f"{e.line_no}.0")
 
-            msg = "=== שגיאה ===\n\n"
+            self.err.insert("end", "=== שגיאה ===\n\n", ("header", "rtl"))
             if e.line_no:
-                msg += f"שורה {e.line_no}: {e}\n"
+                self.err.insert("end", f"שורה {e.line_no}: {e}\n", "rtl")
                 if e.raw_line is not None:
-                    msg += f"קוד מקור: {e.raw_line}\n"
+                    self.err.insert("end", f"קוד מקור: {e.raw_line}\n", "rtl")
             else:
-                msg += f"{e}\n"
-            self.err.insert("end", msg)
+                self.err.insert("end", f"{e}\n", "rtl")
             self.notebook.select(1)
 
     def on_step_back(self):
@@ -1802,7 +1843,7 @@ class App(tk.Tk):
             preview = machine.output[-20:]  # Last 20 values
             self.out_preview.insert("1.0", "\n".join(str(x) for x in preview))
         else:
-            self.out_preview.insert("1.0", "(אין פלט)")
+            self.out_preview.insert("1.0", "(אין פלט)", "rtl")
         self.out_preview.config(state="disabled")
 
     def next_example(self):
