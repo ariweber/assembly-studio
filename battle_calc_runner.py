@@ -4,7 +4,7 @@ import random
 import re
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext, filedialog
-from typing import Optional, List, Tuple, Dict, Any
+from typing import Optional, List, Tuple, Dict, Any, Generator, Callable, NoReturn
 
 # ============================================================
 # VM + PARSER
@@ -33,13 +33,13 @@ class Machine:
     - דגלים: ZERO, NEGATIVE
     - פלט: output (רשימת ערכים שהודפסו)
     """
-    def __init__(self):
-        self.regs = {"R1": 0, "R2": 0, "R3": 0}
-        self.stacks = {"S1": [], "S2": []}
-        self.L1 = 0
-        self.LIST = list(range(33))
+    def __init__(self) -> None:
+        self.regs: Dict[str, int] = {"R1": 0, "R2": 0, "R3": 0}
+        self.stacks: Dict[str, List[int]] = {"S1": [], "S2": []}
+        self.L1: int = 0
+        self.LIST: List[int] = list(range(33))
         self.output: List[int] = []
-        self.flags = {"ZERO": False, "NEGATIVE": False}
+        self.flags: Dict[str, bool] = {"ZERO": False, "NEGATIVE": False}
         self.execution_history: List[Dict[str, Any]] = []
 
     def get_counter(self, name: str) -> int:
@@ -49,7 +49,7 @@ class Machine:
             return len(self.stacks["S2"])
         raise AsmError(f"מונה לא ידוע: {name}")
 
-    def update_flags(self, value: int):
+    def update_flags(self, value: int) -> None:
         self.flags["ZERO"] = (value == 0)
         self.flags["NEGATIVE"] = (value < 0)
 
@@ -91,13 +91,13 @@ class Machine:
             raise AsmError(f"אינדקס LIST מחוץ לטווח: {idx} (מ-{src})")
         return int(self.LIST[idx])
 
-    def write_list(self, expr: str, value: int):
+    def write_list(self, expr: str, value: int) -> None:
         src, idx = self._parse_list_expr(expr)
         if not (0 <= idx < len(self.LIST)):
             raise AsmError(f"אינדקס LIST מחוץ לטווח: {idx} (מ-{src})")
         self.LIST[idx] = int(value)
 
-    def set_target(self, target: str, value: int):
+    def set_target(self, target: str, value: int) -> None:
         target = target.strip()
         if target in self.regs:
             self.regs[target] = int(value)
@@ -111,7 +111,7 @@ class Machine:
             return
         raise AsmError(f"יעד לא ידוע: {target}")
 
-    def save_state(self, step_info: str):
+    def save_state(self, step_info: str) -> None:
         self.execution_history.append({
             "step": step_info,
             "R1": self.regs["R1"],
@@ -175,17 +175,17 @@ def eval_condition(m: Machine, left: str, op: str, right: str) -> bool:
         return lv <= rv
     raise AsmError(f"אופרטור לא נתמך: {op}")
 
-def run_program(program_text: str, seed: Optional[int] = None, max_steps: int = 200000, save_history: bool = False) -> Machine:
+def run_program(program_text: str, seed: Optional[int] = None, max_steps: int = 200000, save_history: bool = False) -> Optional[Machine]:
     """
     הרצת תוכנית עד הסוף.
     משתמש ב-run_program_steps() לשמירת התנהגות זהה.
     """
-    m = None
+    m: Optional[Machine] = None
     for m, ip, line_no, raw, op, args in run_program_steps(program_text, seed, max_steps, save_history):
         pass
     return m
 
-def run_program_steps(program_text: str, seed: Optional[int] = None, max_steps: int = 200000, save_history: bool = False):
+def run_program_steps(program_text: str, seed: Optional[int] = None, max_steps: int = 200000, save_history: bool = False) -> Generator[Tuple[Machine, int, int, str, str, List[str]], None, None]:
     """
     Generator שמחזיר (machine, ip, line_no, raw_line, op, args) אחרי כל הוראה.
     """
@@ -197,7 +197,7 @@ def run_program_steps(program_text: str, seed: Optional[int] = None, max_steps: 
     ip = 0
     steps = 0
 
-    def err(msg: str, line_no: int, raw: str):
+    def err(msg: str, line_no: int, raw: str) -> NoReturn:
         raise AsmError(msg, line_no=line_no, raw_line=raw)
 
     while 0 <= ip < len(ins):
@@ -755,14 +755,14 @@ HALT
 # ============================================================
 
 class App(tk.Tk):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self.title("Assembly Studio — תרגול Assembly")
         self.geometry("1400x900")
         self.option_add('*tearOff', False)
 
         # Color scheme
-        self.colors = {
+        self.colors: Dict[str, str] = {
             'bg': '#f5f5f5',
             'card_bg': '#ffffff',
             'primary': '#2196F3',
@@ -803,7 +803,7 @@ class App(tk.Tk):
         self.update_line_numbers()
         self.bind("<F5>", lambda e: self.on_run())
 
-    def _build_header_bar(self):
+    def _build_header_bar(self) -> None:
         """Build custom header bar aligned to the right (RTL)"""
         header_bar = tk.Frame(self, bg=self.colors['card_bg'], relief=tk.RAISED, bd=1, height=35)
         header_bar.pack(fill="x", padx=0, pady=0)
@@ -826,7 +826,7 @@ class App(tk.Tk):
         help_menu.add_separator()
         help_menu.add_command(label="מדריך קצר", command=self.show_quick_guide)
         
-        def show_help_menu(e):
+        def show_help_menu(e: tk.Event) -> None:
             try:
                 x = help_btn.winfo_rootx()
                 y = help_btn.winfo_rooty() + help_btn.winfo_height()
@@ -852,7 +852,7 @@ class App(tk.Tk):
                     command=lambda l=level_name, e=ex_name: self.load_example(l, e)
                 )
         
-        def show_ex_menu(e):
+        def show_ex_menu(e: tk.Event) -> None:
             try:
                 x = ex_btn.winfo_rootx()
                 y = ex_btn.winfo_rooty() + ex_btn.winfo_height()
@@ -875,7 +875,7 @@ class App(tk.Tk):
         file_menu.add_separator()
         file_menu.add_command(label="יציאה", command=self.quit)
         
-        def show_file_menu(e):
+        def show_file_menu(e: tk.Event) -> None:
             try:
                 x = file_btn.winfo_rootx()
                 y = file_btn.winfo_rooty() + file_btn.winfo_height()
@@ -886,10 +886,10 @@ class App(tk.Tk):
         
         # Hover effects for buttons
         for btn in [help_btn, ex_btn, file_btn]:
-            def make_hover(b):
-                def on_enter(e):
+            def make_hover(b: tk.Button) -> None:
+                def on_enter(e: tk.Event) -> None:
                     b.config(bg="#e0e0e0")
-                def on_leave(e):
+                def on_leave(e: tk.Event) -> None:
                     b.config(bg=self.colors['card_bg'])
                 b.bind("<Enter>", on_enter)
                 b.bind("<Leave>", on_leave)
@@ -980,7 +980,7 @@ class App(tk.Tk):
         ttk.Separator(inner, orient=tk.VERTICAL).pack(side="right", fill="y", padx=8)
         self._create_toolbar_button(inner, "◀ צעד קודם", self.on_step_back, self.colors['text_secondary'])
 
-    def _create_toolbar_button(self, parent, text, command, color):
+    def _create_toolbar_button(self, parent: tk.Frame, text: str, command: Callable[[], None], color: str) -> tk.Button:
         btn = tk.Button(parent, text=text, command=command, 
                        bg=color, fg='white', font=("Arial", 9, "bold"),
                        relief=tk.RAISED, bd=1, padx=10, pady=5,
@@ -988,9 +988,9 @@ class App(tk.Tk):
         btn.pack(side="left", padx=3)
         
         # Hover effect
-        def on_enter(e):
+        def on_enter(e: tk.Event) -> None:
             btn['bg'] = self._darken_color(color)
-        def on_leave(e):
+        def on_leave(e: tk.Event) -> None:
             btn['bg'] = color
         
         btn.bind("<Enter>", on_enter)
@@ -998,7 +998,7 @@ class App(tk.Tk):
         
         return btn
     
-    def _create_toolbar_button_vertical(self, parent, text, command, color):
+    def _create_toolbar_button_vertical(self, parent: tk.Frame, text: str, command: Callable[[], None], color: str) -> tk.Button:
         """Create a button for vertical toolbar"""
         btn = tk.Button(parent, text=text, command=command, 
                        bg=color, fg='white', font=("Arial", 9, "bold"),
@@ -1007,9 +1007,9 @@ class App(tk.Tk):
         btn.pack(fill="x", pady=3)
         
         # Hover effect
-        def on_enter(e):
+        def on_enter(e: tk.Event) -> None:
             btn['bg'] = self._darken_color(color)
-        def on_leave(e):
+        def on_leave(e: tk.Event) -> None:
             btn['bg'] = color
         
         btn.bind("<Enter>", on_enter)
@@ -1017,7 +1017,7 @@ class App(tk.Tk):
         
         return btn
 
-    def _darken_color(self, color):
+    def _darken_color(self, color: str) -> str:
         """Make color slightly darker for hover effect"""
         # Simple darkening by reducing each RGB component
         if color.startswith('#'):
@@ -1026,7 +1026,7 @@ class App(tk.Tk):
             return f'#{r:02x}{g:02x}{b:02x}'
         return color
 
-    def _build_main(self):
+    def _build_main(self) -> None:
         # Main container with two columns using Frame (not PanedWindow)
         main = tk.Frame(self, bg=self.colors['bg'])
         main.pack(fill="both", expand=True, padx=10, pady=8)
@@ -1104,7 +1104,7 @@ class App(tk.Tk):
         cards_container = tk.Frame(cards_canvas, bg=self.colors['bg'])
         cards_canvas.create_window((0, 0), window=cards_container, anchor="nw")
 
-        def update_cards_scroll(event):
+        def update_cards_scroll(event: tk.Event) -> None:
             cards_canvas.configure(scrollregion=cards_canvas.bbox("all"))
         cards_container.bind("<Configure>", update_cards_scroll)
 
@@ -1275,22 +1275,22 @@ class App(tk.Tk):
                                                  fg=self.colors['text_secondary'])
         self.history.pack(fill="both", expand=True, padx=5, pady=5)
 
-    def _create_card(self, parent, title, bg_color=None):
+    def _create_card(self, parent: tk.Widget, title: str, bg_color: Optional[str] = None) -> tk.LabelFrame:
         """Create a styled card frame"""
         if bg_color is None:
             bg_color = self.colors['card_bg']
-        
+
         card = tk.LabelFrame(parent, text=title, font=("Arial", 10, "bold"),
                             bg=bg_color, fg=self.colors['text'],
                             relief=tk.RAISED, bd=2)
         card.pack(fill="both", expand=True, padx=5, pady=5)
         return card
 
-    def _on_scrollbar(self, *args):
+    def _on_scrollbar(self, *args: Any) -> None:
         self.code.yview(*args)
         self.line_numbers.yview(*args)
 
-    def update_line_numbers(self, event=None):
+    def update_line_numbers(self, event: Optional[tk.Event] = None) -> None:
         content = self.code.get("1.0", "end-1c")
         lines = content.split("\n")
         nums = "\n".join(str(i) for i in range(1, len(lines) + 1))
@@ -1312,7 +1312,7 @@ class App(tk.Tk):
         # Update Python equivalent when code changes
         self.update_python_equivalent()
 
-    def _apply_syntax_highlighting(self):
+    def _apply_syntax_highlighting(self) -> None:
         """Apply syntax highlighting to code"""
         content = self.code.get("1.0", "end-1c")
         
@@ -1364,20 +1364,20 @@ class App(tk.Tk):
                 start_idx, end_idx = match.span()
                 self.code.tag_add("number", f"{i}.{start_idx}", f"{i}.{end_idx}")
 
-    def clear_output(self):
+    def clear_output(self) -> None:
         self.out.delete("1.0", "end")
         self.err.delete("1.0", "end")
         self.state.delete("1.0", "end")
         self.history.delete("1.0", "end")
         self.code.tag_remove("errorline", "1.0", "end")
 
-    def copy_output(self):
+    def copy_output(self) -> None:
         txt = self.out.get("1.0", "end-1c")
         self.clipboard_clear()
         self.clipboard_append(txt)
         messagebox.showinfo("הצלחה", "הפלט הועתק ללוח.")
 
-    def new_file(self):
+    def new_file(self) -> None:
         if messagebox.askyesno("חדש", "לנקות את העורך?"):
             self.code.delete("1.0", "end")
             self.clear_output()
@@ -1386,7 +1386,7 @@ class App(tk.Tk):
             self.current_example = None
             self._update_navigation_buttons()
 
-    def open_file(self):
+    def open_file(self) -> None:
         filename = filedialog.askopenfilename(
             title="פתח קובץ",
             filetypes=[("Assembly files", "*.asm"), ("Text files", "*.txt"), ("All files", "*.*")]
@@ -1406,7 +1406,7 @@ class App(tk.Tk):
         except Exception as e:
             messagebox.showerror("שגיאה", f"לא ניתן לפתוח:\n{e}")
 
-    def save_file(self):
+    def save_file(self) -> None:
         filename = filedialog.asksaveasfilename(
             title="שמור קובץ",
             defaultextension=".asm",
@@ -1421,7 +1421,7 @@ class App(tk.Tk):
         except Exception as e:
             messagebox.showerror("שגיאה", f"לא ניתן לשמור:\n{e}")
 
-    def load_example(self, level: str, example: str = None):
+    def load_example(self, level: str, example: Optional[str] = None) -> None:
         if example is None:
             # Backward compatibility
             code = EXAMPLES.get(level) if isinstance(EXAMPLES.get(level), str) else None
@@ -1445,7 +1445,7 @@ class App(tk.Tk):
         self._update_navigation_buttons()
         self.update_python_equivalent()
 
-    def on_run(self):
+    def on_run(self) -> None:
         self.clear_output()
         program = self.code.get("1.0", "end")
         seed_txt = self.seed_var.get().strip()
@@ -1525,7 +1525,7 @@ class App(tk.Tk):
         new_m.flags = m.flags.copy()
         return new_m
 
-    def on_step(self):
+    def on_step(self) -> None:
         """ביצוע צעד אחד"""
         try:
             if self.stepper is None:
@@ -1626,7 +1626,7 @@ class App(tk.Tk):
             self.err.insert("end", msg)
             self.notebook.select(1)
 
-    def on_step_back(self):
+    def on_step_back(self) -> None:
         """חזרה לצעד קודם"""
         if self.step_history_index <= 0:
             # אין מצב קודם
@@ -1648,7 +1648,7 @@ class App(tk.Tk):
         # (ה-stepper יתאתחל מחדש ב-on_step הבא)
         self.stepper = None
 
-    def on_reset(self):
+    def on_reset(self) -> None:
         """איפוס מצב"""
         if self.slow_running:
             self.on_slow_run()  # Stop slow run
@@ -1665,7 +1665,7 @@ class App(tk.Tk):
         # Update Python equivalent card with current program
         self.update_python_equivalent()
 
-    def on_slow_run(self):
+    def on_slow_run(self) -> None:
         """הרצה איטית - toggle"""
         if self.slow_running:
             # Stop
@@ -1688,7 +1688,7 @@ class App(tk.Tk):
                 delay = 150
             self._slow_run_step(delay)
 
-    def _slow_run_step(self, delay):
+    def _slow_run_step(self, delay: int) -> None:
         """צעד אחד בהרצה איטית"""
         if not self.slow_running:
             return
@@ -1705,14 +1705,14 @@ class App(tk.Tk):
             self.slow_running = False
             self.slow_run_btn.config(text="⏯ הרצה איטית")
 
-    def highlight_current_line(self, line_no):
+    def highlight_current_line(self, line_no: int) -> None:
         """הדגשת שורה נוכחית"""
         self.code.tag_remove("currentline", "1.0", "end")
         if line_no:
             self.code.tag_add("currentline", f"{line_no}.0", f"{line_no}.end")
             self.code.see(f"{line_no}.0")
 
-    def update_task_card(self):
+    def update_task_card(self) -> None:
         """עדכון כרטיס המשימה"""
         content = self.code.get("1.0", "end")
         lines = content.splitlines()
@@ -1723,7 +1723,7 @@ class App(tk.Tk):
                 break
         self.task_label.config(text=task_text)
 
-    def update_python_equivalent(self, op: str = None, args: List[str] = None):
+    def update_python_equivalent(self, op: Optional[str] = None, args: Optional[List[str]] = None) -> None:
         """עדכון כרטיס הקוד Python המקביל - מציג את כל התוכנית מתורגמת ל-Python"""
         self.python_text.config(state="normal")
         self.python_text.delete("1.0", "end")
@@ -1762,7 +1762,7 @@ class App(tk.Tk):
         
         self.python_text.config(state="disabled")
 
-    def update_right_cards(self, machine: Machine):
+    def update_right_cards(self, machine: Machine) -> None:
         """עדכון כל הכרטיסים הימניים"""
         # Registers
         for reg in ["R1", "R2", "R3", "L1"]:
@@ -1805,7 +1805,7 @@ class App(tk.Tk):
             self.out_preview.insert("1.0", "(אין פלט)")
         self.out_preview.config(state="disabled")
 
-    def next_example(self):
+    def next_example(self) -> None:
         """עבור לתרגיל הבא"""
         if self.current_level is None or self.current_example is None:
             return
@@ -1832,7 +1832,7 @@ class App(tk.Tk):
         except (ValueError, IndexError):
             pass
 
-    def prev_example(self):
+    def prev_example(self) -> None:
         """עבור לתרגיל הקודם"""
         if self.current_level is None or self.current_example is None:
             return
@@ -1860,7 +1860,7 @@ class App(tk.Tk):
         except (ValueError, IndexError):
             pass
 
-    def _update_navigation_buttons(self):
+    def _update_navigation_buttons(self) -> None:
         """עדכון מצב כפתורי הניווט"""
         if self.current_level is None or self.current_example is None:
             self.prev_example_btn.config(state="disabled")
@@ -1895,7 +1895,7 @@ class App(tk.Tk):
         self.prev_example_btn.config(state="normal" if has_prev else "disabled")
         self.next_example_btn.config(state="normal" if has_next else "disabled")
 
-    def _create_guide_section(self, parent, section):
+    def _create_guide_section(self, parent: tk.Widget, section: Dict[str, Any]) -> None:
         """יצירת סקציה מעוצבת במדריך"""
         # Section card
         card = tk.Frame(parent, bg=section.get("color", "#ffffff"), 
@@ -2008,7 +2008,7 @@ class App(tk.Tk):
                                    fg="#616161")
                 step_desc.pack(anchor="e", padx=30)
 
-    def show_beginner_guide(self):
+    def show_beginner_guide(self) -> None:
         """מדריך מקיף למתחיל עם UI מעוצב"""
         win = tk.Toplevel(self)
         win.title("📘 מדריך למתחיל - Assembly Studio")
@@ -2050,7 +2050,7 @@ class App(tk.Tk):
         scrollbar.pack(side="right", fill="y")
         
         # Mouse wheel scrolling
-        def _on_mousewheel(event):
+        def _on_mousewheel(event: tk.Event) -> None:
             canvas.yview_scroll(int(-1*(event.delta/120)), "units")
         canvas.bind_all("<MouseWheel>", _on_mousewheel)
         
@@ -2176,13 +2176,13 @@ HALT             ; עצור"""
         close_btn.pack(side="left", padx=10)
         
         # Hover effects
-        def on_enter_start(e):
+        def on_enter_start(e: tk.Event) -> None:
             start_btn['bg'] = '#45a049'
-        def on_leave_start(e):
+        def on_leave_start(e: tk.Event) -> None:
             start_btn['bg'] = '#4CAF50'
-        def on_enter_close(e):
+        def on_enter_close(e: tk.Event) -> None:
             close_btn['bg'] = '#616161'
-        def on_leave_close(e):
+        def on_leave_close(e: tk.Event) -> None:
             close_btn['bg'] = '#757575'
         
         start_btn.bind("<Enter>", on_enter_start)
@@ -2191,13 +2191,13 @@ HALT             ; עצור"""
         close_btn.bind("<Leave>", on_leave_close)
         
         # Cleanup on close
-        def on_closing():
+        def on_closing() -> None:
             canvas.unbind_all("<MouseWheel>")
             win.destroy()
         
         win.protocol("WM_DELETE_WINDOW", on_closing)
 
-    def show_first_lesson(self):
+    def show_first_lesson(self) -> None:
         """שיעור ראשון עם דוגמאות קוד"""
         text = """🧾 שיעור ראשון - צעדים ראשונים ב-Assembly
 
@@ -2282,7 +2282,7 @@ HALT
 """
         self._show_help_window("🧾 שיעור ראשון", text, "900x700")
 
-    def show_faq(self):
+    def show_faq(self) -> None:
         """שאלות נפוצות"""
         text = """❓ שאלות נפוצות (FAQ)
 
@@ -2411,7 +2411,7 @@ HALT
 """
         self._show_help_window("❓ שאלות נפוצות", text, "900x700")
 
-    def show_quick_guide(self):
+    def show_quick_guide(self) -> None:
         text = """מדריך קצר:
 
 - תחביר: יעד ואז ערך/מקור
@@ -2428,7 +2428,7 @@ HALT
 """
         self._show_help_window("מדריך קצר", text, "700x500")
 
-    def _show_help_window(self, title, text, geometry="800x600"):
+    def _show_help_window(self, title: str, text: str, geometry: str = "800x600") -> None:
         """פונקציית עזר להצגת חלון עזרה"""
         win = tk.Toplevel(self)
         win.title(title)
